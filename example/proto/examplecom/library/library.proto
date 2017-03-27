@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package examplecom.library;
+
+message Book {
+  string title = 1;
+  string contents = 2;
+}
+
+message BookQuery {
+  string title = 1;
+}
+
+service LibraryService {
+  rpc GetBook(BookQuery) returns (Book) {}
+  rpc ListBooks(BookQuery) returns (stream Book) {}
+}
