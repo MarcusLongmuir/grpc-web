@@ -1,23 +1,23 @@
-import { BookQuery, Book } from "../_proto/examplecom/library/library_pb";
+import {QueryBooksRequest, GetBookRequest, Book} from "../_proto/examplecom/library/book_service_pb";
 
-export class LibraryService {
-  static serviceName: string = "examplecom.library.LibraryService";
+export class BookService {
+  static serviceName: string = "examplecom.library.BookService";
 }
-export namespace LibraryService {
+export namespace BookService {
   export class GetBook {
     static methodName = "GetBook";
-    static service = LibraryService;
+    static service = BookService;
     static requestStream: false;
     static responseStream: false;
-    static requestType = BookQuery;
+    static requestType = GetBookRequest;
     static responseType = Book;
   }
-  export class ListBooks {
-    static methodName = "ListBooks";
-    static service = LibraryService;
+  export class QueryBooks {
+    static methodName = "QueryBooks";
+    static service = BookService;
     static requestStream: false;
     static responseStream: true;
-    static requestType = BookQuery;
+    static requestType = QueryBooksRequest;
     static responseType = Book;
   }
 }

@@ -1,18 +1,17 @@
 import {grpc, BrowserHeaders} from "grpc-web-client";
 
 import {
-  LibraryService,
+  BookService,
 } from "./services";
-import {BookQuery, Book} from "../_proto/examplecom/library/library_pb";
+import {QueryBooksRequest, Book, GetBookRequest} from "../_proto/examplecom/library/book_service_pb";
 
 declare const USE_TLS: boolean;
 const host = USE_TLS ? "https://localhost:9091" : "http://localhost:9090";
 
-const bookQuery = new BookQuery();
-bookQuery.setTitle("Two");
-
-grpc.invoke(LibraryService.GetBook, {
-  request: bookQuery,
+const getBookRequest = new GetBookRequest();
+getBookRequest.setIsbn(60929871);
+grpc.invoke(BookService.GetBook, {
+  request: getBookRequest,
   host: host,
   onHeaders: function(headers: BrowserHeaders) {
     console.log("onHeaders", headers);
@@ -26,10 +25,10 @@ grpc.invoke(LibraryService.GetBook, {
   onComplete: function(code: grpc.Code, msg: string | undefined, trailers: BrowserHeaders) {
     console.log("onComplete", code, msg, trailers);
 
-    const bookQuery = new BookQuery();
-    bookQuery.setTitle("Two");
-    grpc.invoke(LibraryService.ListBooks, {
-      request: bookQuery,
+    const queryBooksRequest = new QueryBooksRequest();
+    queryBooksRequest.setAuthorPrefix("Geor");
+    grpc.invoke(BookService.QueryBooks, {
+      request: queryBooksRequest,
       host: host,
       onHeaders: function(headers: BrowserHeaders) {
         console.log("onHeaders", headers);

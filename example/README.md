@@ -3,8 +3,8 @@
 ### Get started (with HTTP 1.1)
 
 * `npm install`
-* `npm run get_go_deps` to install golang dependencies
-* `npm start` to start the Golang server and Webpack dev server with the generate certificate
+* `npm run install_go_deps` to install Golang dependencies
+* `npm start` to start the Golang server and Webpack dev server
 * Go to `http://localhost:8081`
 
 
@@ -15,4 +15,4 @@ HTTP2 requires TLS. This repository contains certificates in the `misc` director
 Follow [this guide](http://stackoverflow.com/questions/7580508/getting-chrome-to-accept-self-signed-localhost-certificate) to accept the certificates in Chrome.
 
 * `npm run start:tls` to start the Golang server and Webpack dev server with the certificates in `misc`
-* Go to `https://localhost:8081`
+* Go to `https://localhost:8082`

@@ -10,4 +10,4 @@ protoc \
   --js_out=import_style=commonjs,binary:./ts/_proto \
   --go_out=plugins=grpc:./go/_proto \
   --ts_out=./ts/_proto \
-  ./proto/examplecom/library/library.proto || exit $?
+  ./proto/examplecom/library/book_service.proto || exit $?
