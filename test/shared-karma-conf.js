@@ -32,7 +32,7 @@ module.exports = function(useHttps, withBrowserStack) {
       cert: fs.readFileSync('../misc/localhost.crt', 'utf8')
     },
     colors: true,
-    logLevel: 'DEBUG',
+    logLevel: 'INFO',
     client: {
       captureConsole: true,
       runInParent: true,
@@ -47,6 +47,6 @@ module.exports = function(useHttps, withBrowserStack) {
     autoWatch: true,
     captureTimeout: 120000,
     singlerun: withBrowserStack,
-    concurrency: withBrowserStack ? 3 : Math.Infinity
+    concurrency: withBrowserStack ? 2 : Math.Infinity
   };
 };

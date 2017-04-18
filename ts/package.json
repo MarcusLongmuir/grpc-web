@@ -23,7 +23,7 @@
     "ts"
   ],
   "dependencies": {
-    "@types/google-protobuf": "^3.2.4",
+    "@types/google-protobuf": "^3.2.5",
     "browser-headers": "^0.2.1",
     "google-protobuf": "^3.2.0"
   },

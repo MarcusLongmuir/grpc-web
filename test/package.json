@@ -17,7 +17,7 @@
   },
   "license": "none",
   "dependencies": {
-    "@types/google-protobuf": "^3.2.4",
+    "@types/google-protobuf": "^3.2.5",
     "@types/node": "^7.0.5",
     "@types/text-encoding": "0.0.30",
     "google-protobuf": "^3.2.0",

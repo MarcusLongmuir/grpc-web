@@ -12,32 +12,33 @@ var bs_local = null;
 
 var localCallbacks = [];
 var localTunnels = [];
-function LocalTunnel(cb) {
+function LocalTunnel(logger, cb) {
   localTunnels.push(this);
 
   if (tunnelId !== null) {
     cb(null, tunnelId);
-    return;
-  }
-
-  localCallbacks.push(cb);
-  const tunnelIdentifier = "tunnel-" + Math.random();
-  if (localCallbacks.length === 1) {
-    bs_local = new browserstack.Local();
-    bs_local.start({
-      'key': accessKey,
-      'localIdentifier': tunnelIdentifier
-    }, function(error) {
-      tunnelId = tunnelIdentifier;
-      for(var i = 0; i < localCallbacks.length; i++) {
-        localCallbacks[i](error, tunnelIdentifier);
-      }
-    });
+  } else {
+    localCallbacks.push(cb);
+    const tunnelIdentifier = "tunnel-" + Math.random();
+    if (localCallbacks.length === 1) {
+      bs_local = new browserstack.Local();
+      bs_local.start({
+        'key': accessKey,
+        'localIdentifier': tunnelIdentifier
+      }, function (error) {
+        tunnelId = tunnelIdentifier;
+        for (var i = 0; i < localCallbacks.length; i++) {
+          localCallbacks[i](error, tunnelIdentifier);
+        }
+        localCallbacks = [];
+      });
+    }
   }
 
   this.dispose = function(cb){
     localTunnels.splice(localTunnels.indexOf(this), 1);
     if (localTunnels.length === 0) {
+      tunnelId = null;
       bs_local.stop(function(){
         cb(null);
       });
@@ -51,33 +52,30 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   baseBrowserDecorator(this);
   var self = this;
   var capabilities = args.capabilities;
-  var log = logger.create('launcher.selenium-webdriver');
+  self.name = capabilities.browserName + ' - ' + capabilities.browserVersion + ' - ' + capabilities.os + ' ' + capabilities.os_version;
+  var log = logger.create('launcher.selenium-webdriver: ' + self.name);
   self.log = log;
-  var browserName = args.browserName;
-  var killingPromise;
+  var captured = false;
 
   self.id = id;
-  self.name = capabilities.browserName + ' - ' + capabilities.browserVersion + ' - ' + capabilities.platform + ' - ' + capabilities.platformVersion;
 
   self._start = function (testUrl) {
-    log.info('starting '+self.name);
-
-    self.localTunnel = new LocalTunnel(function(err, tunnelIdentifier) {
+    self.localTunnel = new LocalTunnel(log, function(err, tunnelIdentifier) {
       if (err) {
-        return log.info("Could not create local testing", err);
+        return log.error("Could not create local testing", err);
       }
 
-      log.info('Connected. Now testing...');
+      log.debug('Local Tunnel Connected. Now testing...');
       const browser = wd.remote(seleniumHost, seleniumPort, username, accessKey);
       self.browser = browser;
       browser.on('status', function(info) {
-        log.info(info);
+        log.debug(info);
       });
       browser.on('command', function(eventType, command, response) {
-        log.info(' > ' + eventType, command, (response || ''));
+        log.debug(' > ' + eventType, command, (response || ''));
       });
       browser.on('http', function(meth, path, data) {
-        log.info(' > ' + meth, path, (data || ''));
+        log.debug(' > ' + meth, path, (data || ''));
       });
       const bsCaps = Object.assign({
         acceptSslCerts: true,
@@ -86,20 +84,21 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
         "browserstack.tunnel": true,
         "browserstack.debug": true,
         tunnelIdentifier: tunnelIdentifier,
-        "browserstack.localIdentifier": tunnelIdentifier
+        "browserstack.localIdentifier": tunnelIdentifier,
+        "browserstack.safari.driver": "2.48"
       }, capabilities);
-      log.info("bsCaps", bsCaps);
-      browser.init(bsCaps, function() {
-        log.info("browser", browser);
+      browser.init(bsCaps, function(err) {
+        if (err) {
+          log.error("browser.init", err);
+          throw err;
+        }
         browser.get("https://localhost:9100", function() {
           browser.sleep(2000, function() {
             browser.get("https://localhost:9105", function () {
               browser.sleep(2000, function () {
-                browser.get(testUrl, function () {
-                  log.info("GOT TO TEST PAGE");
-                  setTimeout(function() {
-                    log.info("I WAITED FOR YOU");
-                  }, 120000);
+                browser.get(testUrl, function() {
+                  captured = true;
+                  // This will just wait on the page until the browser is killed
                 });
               });
             });
@@ -109,27 +108,22 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
     });
   };
 
-  self.kill = function(){
-    if (killingPromise) {
-      return killingPromise;
-    }
-
-    var deferred = q.defer();
-    killingPromise = deferred.promise;
-
+  this.on('kill', function(done){
     self.localTunnel.dispose(function(){
-      self.browser.quit(function() {
-        deferred.resolve();
+      self.browser.quit(function(err) {
+        self._done();
+        done();
       });
     });
+  });
 
-    return killingPromise;
+  self.isCaptured = function() {
+    return captured;
   };
 
-  self.forceKill = function() {
-    self.kill();
-    return killingPromise;
-  };
+  // self.forceKill = function() {
+  //   return self.kill();
+  // };
 }
 
 CustomWebdriverBrowser.$inject = [ 'id', 'baseBrowserDecorator', 'args', 'logger' ];
