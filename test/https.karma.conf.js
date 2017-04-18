@@ -7,16 +7,9 @@ var fs = require("fs");
 module.exports = function(config) {
   const customLaunchers = {
     swd_firefox: {
-      user: 'USERNAME',
-      key: 'ACCESS_KEY',
-      seleniumHost: 'hub-cloud.browserstack.com',
-      seleniumPort: 80,
-      base: 'SeleniumWebdriver',
-      browserName: 'Firefox',
-      getDriver: function(){
-        // example from https://www.npmjs.com/package/selenium-webdriver#usage
-        return new firefox.Driver();
-      }
+      base: 'CustomWebDriver',
+      browserName: 'ie',
+      browserVersion: 10,
     }
   };
   const browsers = ['swd_firefox'];

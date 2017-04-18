@@ -1,93 +1,65 @@
-var chai = require("chai");
-var chaiAsPromised = require("chai-as-promised");
-var wd = require('wd');
-var colors = require('colors');
-var browserstack = require('browserstack-local');
-
-chai.use(chaiAsPromised);
-chai.should();
-chaiAsPromised.transferPromiseness = wd.transferPromiseness;
-
-wd.addPromiseChainMethod(
-  'onQuit', function(done) {
-    if(done) done();
-    return this;
-  }
-);
+const wd = require('wd');
+const browserstack = require('browserstack-local');
 
 const username = process.env.BROWSER_STACK_USERNAME;
 const accessKey = process.env.BROWSER_STACK_ACCESS_KEY;
 const tunnelIdentifier = "tunnel-" + Math.random();
-console.log("tunnelIdentifier", tunnelIdentifier);
+const testUrl = "https://localhost:9876";
+const seleniumHost = 'hub-cloud.browserstack.com';
+const seleniumPort = 80;
 
-var config = {
-  user: username,
-  key: accessKey,
-  seleniumHost: 'hub-cloud.browserstack.com',
-  seleniumPort: 80,
-  capabilities: [{
-    browserName: 'ie',
-    browserVersion: 10,
-    acceptSslCerts: true,
-    defaultVideo: true,
-    "browserstack.local": true,
-    "browserstack.tunnel": true,
-    "browserstack.debug": true,
-    tunnelIdentifier: tunnelIdentifier,
-    "browserstack.localIdentifier": tunnelIdentifier,
-  }]
+const capabilities = {
+  browserName: 'ie',
+  browserVersion: 10,
+  acceptSslCerts: true,
+  defaultVideo: true,
+  "browserstack.local": true,
+  "browserstack.tunnel": true,
+  "browserstack.debug": true,
+  tunnelIdentifier: tunnelIdentifier,
+  "browserstack.localIdentifier": tunnelIdentifier
 };
 
-var test = {
-  name: 'BrowserStack Local Testing',
-  run : function (browser) {
-    return browser
-      .get("http://localhost:9090")
-      .sleep(2000)
-      .get("http://localhost:9095")
-      .sleep(2000)
-      .get("https://localhost:9100")
-      .sleep(2000)
-      .get("https://localhost:9105")
-      .sleep(2000)
-      .get("https://localhost:9876")
-      .sleep(120000);
-  }
+const localConfig = {
+  'key': accessKey,
+  'localIdentifier': tunnelIdentifier
 };
 
-function runOnBrowserStack(caps, test, done){
-  console.log("Running Test: " + test.name.green + '\n');
-  var browser = wd.promiseChainRemote(config.seleniumHost, config.seleniumPort, username, accessKey);
+const bs_local = new browserstack.Local();
+bs_local.start(localConfig, function(error) {
+  if (error) return console.log(error);
 
-  // optional extra logging
+  console.log('Connected. Now testing...');
+  const browser = wd.remote(seleniumHost, seleniumPort, username, accessKey);
   browser.on('status', function(info) {
-    console.log(info.cyan);
+    console.log(info);
   });
   browser.on('command', function(eventType, command, response) {
-    console.log(' > ' + eventType.green, command, (response || '').grey);
+    console.log(' > ' + eventType, command, (response || ''));
   });
   browser.on('http', function(meth, path, data) {
-    console.log(' > ' + meth.yellow, path, (data || '').grey);
+    console.log(' > ' + meth, path, (data || ''));
   });
-
-  test.run(browser.init(caps)).fin(function() {
-    return browser.quit();
-  }).onQuit(done).done();
-}
-
-for(var i in config.capabilities){
-  var caps = config.capabilities[i];
-  // Code to start browserstack local before start of test and stop browserstack local after end of test
-  console.log("Connecting local");
-  var bs_local = new browserstack.Local();
-  bs_local.start({'key': accessKey, 'localIdentifier': tunnelIdentifier }, function(error) {
-    if (error) return console.log(error.red);
-    console.log('Connected. Now testing...');
-
-    runOnBrowserStack(caps, test, function(){
-      bs_local.stop(function(){
-        console.log("Stopped local tunnel");
+  browser.init(capabilities, function() {
+    browser.get("https://localhost:9100", function() {
+      browser.sleep(2000, function() {
+        browser.get("https://localhost:9105", function () {
+          browser.sleep(2000, function () {
+            browser.get(testUrl, function () {
+              console.log("GOT TO TEST PAGE");
+              setTimeout(function() {
+                console.log("I WAITED FOR YOU");
+              }, 120000);
+            });
+          });
+        });
       });
-    });
+    })
   });
-}
+
+  //On complete
+  // bs_local.stop(function(){
+  //   console.log("Stopped local tunnel");
+  // });
+  // return browser.quit();
+});

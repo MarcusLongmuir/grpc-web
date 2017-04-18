@@ -4,7 +4,6 @@ function SeleniumWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   baseBrowserDecorator(this);
 
   var self = this;
-  var captured = false;
   var log = logger.create('launcher.selenium-webdriver');
   var browserName = args.browserName;
   var killingPromise;
@@ -16,7 +15,6 @@ function SeleniumWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
 
   self._start = function(url){
     log.info('starting '+self.name);
-    var driver = args.getDriver();
     self.driver_ = driver;
 
     self.getSession_(function(session){
@@ -100,5 +98,5 @@ SeleniumWebdriverBrowser.prototype.toString = function() {
 
 // PUBLISH DI MODULE
 module.exports = {
-  'launcher:SeleniumWebdriver': ['type', SeleniumWebdriverBrowser]
+  'launcher:CustomWebDriver': ['type', SeleniumWebdriverBrowser]
 };
