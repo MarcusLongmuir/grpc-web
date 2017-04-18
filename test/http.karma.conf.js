@@ -1,10 +1,10 @@
 // Http Karma configuration - for all browsers that are tested
 
-var sharedConfigGenerator = require("./shared-karma-conf.js");
+const sharedConfigGenerator = require("./shared-karma-conf.js");
+const fs = require("fs");
 
-var fs = require("fs");
 module.exports = function(config) {
-  var customLaunchers = {
+  const customLaunchers = {
     // 'SL_Safari_Latest': {
     //   base: 'SauceLabs',
     //   browserName: 'safari',
@@ -41,17 +41,13 @@ module.exports = function(config) {
     // }
   };
 
-  var browsers = [];
+  const browsers = [];
   const useBrowserStack = process.env.BROWSER_STACK_USERNAME !== undefined;
-
   if (useBrowserStack) {
     Array.prototype.push.apply(browsers, Object.keys(customLaunchers));
   }
-
-  var settings = sharedConfigGenerator(false, useBrowserStack);
-
+  const settings = sharedConfigGenerator(false, useBrowserStack);
   settings.browsers = browsers;
   settings.customLaunchers = customLaunchers;
-
   config.set(settings)
 };

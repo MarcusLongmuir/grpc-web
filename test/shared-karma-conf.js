@@ -39,10 +39,9 @@ module.exports = function(useHttps, withBrowserStack) {
       useIframe: false
     },
     plugins: [
-      require('./selenium'),
+      require('./custom-karma-driver'),
       {'preprocessor:config-inject': ['factory', configPreprocessor]},
       "karma-sourcemap-loader",
-      "karma-selenium-webdriver-launcher",
       "karma-jasmine"
     ],
     autoWatch: true,
