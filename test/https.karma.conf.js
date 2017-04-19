@@ -20,7 +20,7 @@ module.exports = function(config) {
         browserName: 'ie',
         browserVersion: "11",
         os: 'Windows',
-        os_version: "10"
+        os_version: "7"
       }
     },
     swd_edge14: {
@@ -77,34 +77,33 @@ module.exports = function(config) {
         os_version: "Sierra"
       }
     },
-    // Safari is disabled pending HTTPS tunnel BrowserStack investigation
-    // swd_safari8: {
-    //   base: 'CustomWebDriver',
-    //   capabilities: {
-    //     browserName: 'safari',
-    //     browserVersion: "8",
-    //     os: 'OS X',
-    //     os_version: "Yosemite"
-    //   }
-    // },
-    // swd_safari9_1: {
-    //   base: 'CustomWebDriver',
-    //   capabilities: {
-    //     browserName: 'safari',
-    //     browserVersion: "9.1",
-    //     os: 'OS X',
-    //     os_version: "El Capitan"
-    //   }
-    // },
-    // swd_safari10: {
-    //   base: 'CustomWebDriver',
-    //   capabilities: {
-    //     browserName: 'safari',
-    //     browserVersion: "10",
-    //     os: 'OS X',
-    //     os_version: "Sierra"
-    //   }
-    // }
+    swd_safari8: {
+      base: 'CustomWebDriver',
+      capabilities: {
+        browserName: 'safari',
+        browserVersion: "8",
+        os: 'OS X',
+        os_version: "Yosemite"
+      }
+    },
+    swd_safari9_1: {
+      base: 'CustomWebDriver',
+      capabilities: {
+        browserName: 'safari',
+        browserVersion: "9.1",
+        os: 'OS X',
+        os_version: "El Capitan"
+      }
+    },
+    swd_safari10: {
+      base: 'CustomWebDriver',
+      capabilities: {
+        browserName: 'safari',
+        browserVersion: "10",
+        os: 'OS X',
+        os_version: "Sierra"
+      }
+    }
   };
   const browsers = [];
   const useBrowserStack = process.env.BROWSER_STACK_USERNAME !== undefined;

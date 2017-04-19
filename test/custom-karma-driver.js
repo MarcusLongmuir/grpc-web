@@ -2,10 +2,18 @@ var q = require('q');
 const wd = require('wd');
 const browserstack = require('browserstack-local');
 
+var hostsConfig = require("./hosts-config");
+
 const username = process.env.BROWSER_STACK_USERNAME;
 const accessKey = process.env.BROWSER_STACK_ACCESS_KEY;
 const seleniumHost = 'hub-cloud.browserstack.com';
 const seleniumPort = 80;
+
+const viaUrls = [
+  "https://" + hostsConfig.validHost + ":9100",
+  "https://" + hostsConfig.validHost + ":9105",
+  "https://" + hostsConfig.invalidHost + ":9100"
+];
 
 var tunnelId = null;
 var bs_local = null;
@@ -78,32 +86,34 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
         log.debug(' > ' + meth, path, (data || ''));
       });
       const bsCaps = Object.assign({
-        acceptSslCerts: true,
-        defaultVideo: true,
+        "acceptSslCerts": true,
+        "defaultVideo": true,
         "browserstack.local": true,
         "browserstack.tunnel": true,
         "browserstack.debug": true,
-        tunnelIdentifier: tunnelIdentifier,
-        "browserstack.localIdentifier": tunnelIdentifier,
-        "browserstack.safari.driver": "2.48"
+        // "browserstack.safari.driver": "2.48",
+        "tunnelIdentifier": tunnelIdentifier,
+        "browserstack.localIdentifier": tunnelIdentifier
       }, capabilities);
       browser.init(bsCaps, function(err) {
         if (err) {
           log.error("browser.init", err);
           throw err;
         }
-        browser.get("https://localhost:9100", function() {
-          browser.sleep(2000, function() {
-            browser.get("https://localhost:9105", function () {
-              browser.sleep(2000, function () {
-                browser.get(testUrl, function() {
-                  captured = true;
-                  // This will just wait on the page until the browser is killed
-                });
-              });
+        var next = function(i){
+          const via = viaUrls[i];
+          if (!via) {
+            browser.get(testUrl, function() {
+              captured = true;
+              // This will just wait on the page until the browser is killed
             });
-          });
-        })
+          } else {
+            browser.get(via, function() {
+              next(i+1);
+            });
+          }
+        };
+        next(0);
       });
     });
   };
@@ -120,10 +130,6 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
   self.isCaptured = function() {
     return captured;
   };
-
-  // self.forceKill = function() {
-  //   return self.kill();
-  // };
 }
 
 CustomWebdriverBrowser.$inject = [ 'id', 'baseBrowserDecorator', 'args', 'logger' ];

@@ -206,6 +206,7 @@ export namespace grpc {
             const deserialized = methodDescriptor.responseType.deserializeBinary(d.data!);
             rawOnMessage(deserialized);
           } else if (d.chunkType === ChunkType.TRAILERS) {
+            props.debug && debug("onChunk.trailers", responseTrailers);
             responseTrailers = new BrowserHeaders(d.trailers);
           }
         });

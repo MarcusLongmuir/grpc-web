@@ -27,16 +27,18 @@ import {
   TestService,
   FailService,
 } from "./services";
+const {
+  validHost,
+  invalidHost
+} = require("../../hosts-config");
 import {assert} from "chai";
 
-const hostName = "localhost";
-const corsHostName = "127.0.0.1";
 const DEBUG = false;
 const useHttps: boolean = (window as any).USE_HTTPS;
-const testHost = useHttps ? `https://${hostName}:9100` : `http://${hostName}:9090`;
-const corsHost = useHttps ? `https://${corsHostName}:9100` : `http://${corsHostName}:9090`;
-const unavailableHost = `${useHttps ? "https" : "http"}://${hostName}:9999`;
-const emptyHost = useHttps ? `https://${hostName}:9105` : `http://${hostName}:9095`;
+const testHost = useHttps ? `https://${validHost}:9100` : `http://${validHost}:9090`;
+const corsHost = useHttps ? `https://${invalidHost}:9100` : `http://${invalidHost}:9090`;
+const unavailableHost = `${useHttps ? "https" : "http"}://${validHost}:9999`;
+const emptyHost = useHttps ? `https://${validHost}:9105` : `http://${validHost}:9095`;
 
 
 describe("grpc-web-client", () => {
@@ -181,7 +183,11 @@ describe("grpc-web-client", () => {
   //   grpc.invoke(FailService.NonExistant, { // The test server hasn't registered this service, so it should fail CORS
   //     debug: DEBUG,
   //     request: ping,
-  //     host: corsHost, // Have to use something other than ${host} because IE doesn't treat different ports as cross-origin
+  //     // This test is actually calling the same server as the other tests, but the server will reject the OPTIONS call
+  //     // because the service isn't registered. This could be the same host as all other tests (that are actually CORS
+  //     // requests because they differ by port from the page the tests are run from), but IE treats different ports on
+  //     // the same host as the same origin, so this request has to be made to a different host to trigger CORS behaviour.
+  //     host: corsHost,
   //     onHeaders: function(headers: BrowserHeaders) {
   //       didGetOnHeaders = true;
   //     },

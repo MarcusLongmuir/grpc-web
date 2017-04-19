@@ -1,6 +1,7 @@
 // Shared Karma configuration
 
 var fs = require("fs");
+var hostsConfig = require("./hosts-config");
 
 module.exports = function(useHttps, withBrowserStack) {
   function configPreprocessor(args, config, logger, helper) {
@@ -27,6 +28,7 @@ module.exports = function(useHttps, withBrowserStack) {
     reporters: reporters,
     port: 9876,
     protocol: useHttps ? "https" : "http",
+    hostname: hostsConfig.testHost,
     httpsServerOptions: {
       key: fs.readFileSync('../misc/localhost.key', 'utf8'),
       cert: fs.readFileSync('../misc/localhost.crt', 'utf8')
