@@ -6,8 +6,9 @@ var hostsConfig = require("./hosts-config");
 module.exports = function(useHttps, withBrowserStack) {
   function configPreprocessor(args, config, logger, helper) {
     return function(content, file, done) {
-      var envContent = 'window.USE_HTTPS = ' + useHttps + ';';
-      done(envContent + '\n' + content);
+      var envContent = 'window.USE_HTTPS = ' + useHttps + ';\n';
+      envContent += 'window.DEBUG = ' + (process.env.DEBUG !== undefined) + ';\n';
+      done(envContent + content);
     };
   }
 

@@ -91,7 +91,6 @@ function CustomWebdriverBrowser(id, baseBrowserDecorator, args, logger) {
         "browserstack.local": true,
         "browserstack.tunnel": true,
         "browserstack.debug": true,
-        // "browserstack.safari.driver": "2.48",
         "tunnelIdentifier": tunnelIdentifier,
         "browserstack.localIdentifier": tunnelIdentifier
       }, capabilities);
