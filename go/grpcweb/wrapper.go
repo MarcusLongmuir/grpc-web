@@ -55,7 +55,10 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 //
 // You can control the CORS behaviour using `With*` options in the WrapServer function.
 func (w *WrappedGrpcServer) ServeHttp(resp http.ResponseWriter, req *http.Request) {
-	if w.IsGrpcWebRequest(req) || w.IsAcceptableGrpcCorsRequest(req) {
+	if req.Method == http.MethodOptions && w.IsAcceptableGrpcCorsRequest(req) {
+		w.corsWrapper.Handler(http.HandlerFunc(w.HandleGrpcWebRequest)).ServeHTTP(resp, req)
+		return
+	} else if req.Method == http.MethodPost && w.IsGrpcWebRequest(req) {
 		w.corsWrapper.Handler(http.HandlerFunc(w.HandleGrpcWebRequest)).ServeHTTP(resp, req)
 		return
 	}

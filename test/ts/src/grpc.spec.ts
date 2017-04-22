@@ -38,7 +38,7 @@ const USE_HTTPS: boolean = (window as any).USE_HTTPS;
 const validHostUrl = USE_HTTPS ? `https://${validHost}:9100` : `http://${validHost}:9090`;
 const corsHostUrl = USE_HTTPS ? `https://${invalidHost}:9100` : `http://${invalidHost}:9090`;
 const unavailableHost = `${USE_HTTPS ? "https" : "http"}://${validHost}:9999`;
-const emptyHost = USE_HTTPS ? `https://${validHost}:9105` : `http://${validHost}:9095`;
+const emptyHost = USE_HTTPS ? `https://${invalidHost}:9105` : `http://${invalidHost}:9095`;
 
 
 describe("grpc-web-client", () => {
@@ -183,8 +183,8 @@ describe("grpc-web-client", () => {
     grpc.invoke(FailService.NonExistant, { // The test server hasn't registered this service, so it should fail CORS
       debug: DEBUG,
       request: ping,
-      // This test is actually calling the same server as the other tests, but the server will reject the OPTIONS call
-      // because the service isn't registered. This could be the same host as all other tests (that are actually CORS
+      // This test is actually calling the same server as the other tests, but the server should reject the OPTIONS call
+      // because the service isn't registered. This could be the same host as all other tests (that should be CORS
       // requests because they differ by port from the page the tests are run from), but IE treats different ports on
       // the same host as the same origin, so this request has to be made to a different host to trigger CORS behaviour.
       host: corsHostUrl,
@@ -285,7 +285,7 @@ describe("grpc-web-client", () => {
     grpc.invoke(FailService.NonExistant, { // The test server hasn't registered this service, so it should return an error
       debug: DEBUG,
       request: ping,
-      host: emptyHost, // This service accepts CORS requests for unregistered endpoints
+      host: emptyHost,
       onHeaders: function (headers: BrowserHeaders) {
         didGetOnHeaders = true;
         assert.deepEqual(headers.get("grpc-status"), ["12"]);

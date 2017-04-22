@@ -54,7 +54,6 @@ func main() {
 	http1EmptyServer := http.Server{
 		Addr:    fmt.Sprintf(":%d", *http1EmptyPort),
 		Handler: http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
-			grpclog.Printf("Got request for http1EmptyServer")
 			emptyHandler(res, req)
 		}),
 	}
