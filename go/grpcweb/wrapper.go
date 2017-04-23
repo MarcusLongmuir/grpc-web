@@ -55,10 +55,7 @@ func WrapServer(server *grpc.Server, options ...Option) *WrappedGrpcServer {
 //
 // You can control the CORS behaviour using `With*` options in the WrapServer function.
 func (w *WrappedGrpcServer) ServeHttp(resp http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodOptions && w.IsAcceptableGrpcCorsRequest(req) {
-		w.corsWrapper.Handler(http.HandlerFunc(w.HandleGrpcWebRequest)).ServeHTTP(resp, req)
-		return
-	} else if req.Method == http.MethodPost && w.IsGrpcWebRequest(req) {
+	if w.IsAcceptableGrpcCorsRequest(req) || w.IsGrpcWebRequest(req) {
 		w.corsWrapper.Handler(http.HandlerFunc(w.HandleGrpcWebRequest)).ServeHTTP(resp, req)
 		return
 	}
@@ -76,9 +73,9 @@ func (w *WrappedGrpcServer) HandleGrpcWebRequest(resp http.ResponseWriter, req *
 }
 
 // IsGrpcWebRequest determines if a request is a gRPC-Web request by checking that the "content-type" is
-// "application/grpc-web".
+// "application/grpc-web" and that the method is POST.
 func (w *WrappedGrpcServer) IsGrpcWebRequest(req *http.Request) bool {
-	return strings.HasPrefix(req.Header.Get("content-type"), "application/grpc-web")
+	return req.Method == http.MethodPost && strings.HasPrefix(req.Header.Get("content-type"), "application/grpc-web")
 }
 
 // IsAcceptableGrpcCorsRequest determines if a request is a CORS pre-flight request for a gRPC-Web request and that this
