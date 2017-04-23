@@ -26,6 +26,33 @@ module.exports = {
       os_version: "10"
     }
   },
+  swd_edge13: {
+    base: 'CustomWebDriver',
+    capabilities: {
+      browserName: 'edge',
+      browserVersion: "13",
+      os: 'Windows',
+      os_version: "10"
+    }
+  },
+  swd_ff52_win: {
+    base: 'CustomWebDriver',
+    capabilities: {
+      browserName: 'firefox',
+      browserVersion: "52",
+      os: 'Windows',
+      os_version: "10"
+    }
+  },
+  swd_ff52_osx: {
+    base: 'CustomWebDriver',
+    capabilities: {
+      browserName: 'firefox',
+      browserVersion: "52",
+      os: 'OS X',
+      os_version: "Sierra"
+    }
+  },
   swd_chrome_41: {
     base: 'CustomWebDriver',
     capabilities: {
@@ -44,15 +71,6 @@ module.exports = {
       os_version: "7"
     }
   },
-  swd_ff52_win: {
-    base: 'CustomWebDriver',
-    capabilities: {
-      browserName: 'firefox',
-      browserVersion: "52",
-      os: 'Windows',
-      os_version: "10"
-    }
-  },
   swd_ff38_win: {
     base: 'CustomWebDriver',
     capabilities: {
@@ -60,15 +78,6 @@ module.exports = {
       browserVersion: "38", // Fetch support added in Firefox 39
       os: 'Windows',
       os_version: "10"
-    }
-  },
-  swd_ff52_osx: {
-    base: 'CustomWebDriver',
-    capabilities: {
-      browserName: 'firefox',
-      browserVersion: "52",
-      os: 'OS X',
-      os_version: "Sierra"
     }
   },
   swd_safari8: {
@@ -89,13 +98,14 @@ module.exports = {
       os_version: "El Capitan"
     }
   },
-  swd_safari10: {
-    base: 'CustomWebDriver',
-    capabilities: {
-      browserName: 'safari',
-      browserVersion: "10",
-      os: 'OS X',
-      os_version: "Sierra"
-    }
-  }
+  // Safari 10 disabled whilst investigating an issue with https requests for unresolved host hanging through Browserstack
+  // swd_safari10: {
+  //   base: 'CustomWebDriver',
+  //   capabilities: {
+  //     browserName: 'safari',
+  //     browserVersion: "10",
+  //     os: 'OS X',
+  //     os_version: "Sierra"
+  //   }
+  // },
 };

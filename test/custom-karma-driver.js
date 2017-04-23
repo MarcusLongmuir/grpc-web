@@ -12,7 +12,8 @@ const seleniumPort = 80;
 const viaUrls = [
   "https://" + hostsConfig.validHost + ":9100",
   "https://" + hostsConfig.validHost + ":9105",
-  "https://" + hostsConfig.invalidHost + ":9100"
+  "https://" + hostsConfig.invalidHost + ":9100",
+  "https://" + hostsConfig.invalidHost + ":9105"
 ];
 
 var tunnelId = null;
