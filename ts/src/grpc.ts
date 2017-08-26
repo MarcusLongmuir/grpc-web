@@ -13,6 +13,10 @@ export {
   Code,
 };
 
+export type Client = {
+  abort: () => void
+}
+
 export namespace grpc {
 
   export interface ProtobufMessageClass<T extends jspb.Message> {
@@ -98,10 +102,6 @@ export namespace grpc {
     onEnd: (output: UnaryOutput<TResponse>) => void,
     transport?: Transport,
     debug?: boolean,
-  }
-
-  export type Client = {
-    abort: () => void
   }
 
   function frameRequest(request: jspb.Message): ArrayBufferView {

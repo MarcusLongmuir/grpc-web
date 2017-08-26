@@ -43,6 +43,7 @@ const DEBUG: boolean = (global as any).DEBUG;
 import {
   grpc,
   Code,
+  Client,
   BrowserHeaders,
 } from "../../../ts/src/index";
 import UnaryMethodDefinition = grpc.UnaryMethodDefinition;
@@ -52,10 +53,11 @@ import {
   Empty,
 } from "google-protobuf/google/protobuf/empty_pb";
 import {
+  HistoryRequest, HistoryResponse,
   PingRequest,
   PingResponse,
 } from "../_proto/improbable/grpcweb/test/test_pb";
-import {FailService, TestService} from "../_proto/improbable/grpcweb/test/test_pb_service";
+import {FailService, TestService, TestUtilService} from "../_proto/improbable/grpcweb/test/test_pb_service";
 import {UncaughtExceptionListener} from "./util";
 
 function headerTrailerCombos(cb: (withHeaders: boolean, withTrailers: boolean, name: string) => void) {
@@ -760,6 +762,67 @@ function runTests({testHostUrl, corsHostUrl, unavailableHost, emptyHost}: TestCo
 
         assert.equal(transportCancelFuncInvoked, true, "transport's cancel func must be invoked");
       });
+
+      it("should handle aborting a streaming response mid-stream with immediate propagation", (done) => {
+        let onMessageId = 0;
+
+        const historyIdentifier = `rpc-${Math.random()}`;
+
+        const ping = new PingRequest();
+        ping.setValue("hello world");
+        ping.setResponseCount(20); // Request more messages than the client will accept before cancelling
+        ping.setMessageLatencyMs(1000);
+        ping.setHistoryIdentifier(historyIdentifier);
+
+        let client: Client;
+
+        const doAbort = () => {
+          client.abort();
+
+          // Need to wait for the server to receive the cancellation with enough of a gap to check that it stopped
+          // sending as a result.
+          const historyRequestDelay = 2500;
+          setTimeout(() => {
+            const historyRequest = new HistoryRequest();
+            historyRequest.setHistoryIdentifier(historyIdentifier);
+            grpc.unary(TestUtilService.GetMessageHistory, {
+              debug: DEBUG,
+              request: historyRequest,
+              host: testHostUrl,
+              onEnd: ({ message }) => {
+                const messageCount = (message as HistoryResponse).getMessageCount();
+                DEBUG && debug("messageCount", messageCount);
+                // To confirm that the abort is propagated immediately, rather than only on receiving the next message,
+                // this test confirms that the server didn't send a subsequent message
+                assert.equal(messageCount, 2);
+                done();
+              },
+            })
+          }, historyRequestDelay);
+        };
+
+        client = grpc.invoke(TestService.PingList, {
+          debug: DEBUG,
+          request: ping,
+          host: testHostUrl,
+          onHeaders: (headers: BrowserHeaders) => {
+            DEBUG && debug("headers", headers);
+          },
+          onMessage: (message: PingResponse) => {
+            assert.ok(message instanceof PingResponse);
+            assert.strictEqual(message.getCounter(), onMessageId++);
+            if (message.getCounter() === 2) {
+              // Abort after receiving 2 messages
+              doAbort();
+            }
+          },
+          onEnd: (status: Code, statusMessage: string, trailers: BrowserHeaders) => {
+            DEBUG && debug("status", status, "statusMessage", statusMessage, "trailers", trailers);
+            // onEnd shouldn't be called if abort is called prior to the response ending
+            assert.fail();
+          }
+        });
+      }, 10000);
     });
   });
 }

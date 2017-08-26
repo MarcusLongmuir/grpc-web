@@ -20,6 +20,7 @@ import (
 	"google.golang.org/grpc/transport"
 	"crypto/tls"
 	"time"
+	"sync"
 )
 
 var (
@@ -35,7 +36,12 @@ func main() {
 	flag.Parse()
 
 	grpcServer := grpc.NewServer()
-	testproto.RegisterTestServiceServer(grpcServer, &testSrv{})
+	testServer := &testSrv{
+		messageHistoryMutex: &sync.Mutex{},
+		messageHistory: map[string]int32{},
+	}
+	testproto.RegisterTestServiceServer(grpcServer, testServer)
+	testproto.RegisterTestUtilServiceServer(grpcServer, testServer)
 	grpclog.SetLogger(log.New(os.Stdout, "testserver: ", log.LstdFlags))
 
 	wrappedServer := grpcweb.WrapServer(grpcServer)
@@ -101,6 +107,8 @@ func main() {
 }
 
 type testSrv struct {
+	messageHistoryMutex *sync.Mutex
+	messageHistory map[string]int32
 }
 
 func (s *testSrv) PingEmpty(ctx context.Context, _ *google_protobuf.Empty) (*testproto.PingResponse, error) {
@@ -141,6 +149,14 @@ func (s *testSrv) PingError(ctx context.Context, ping *testproto.PingRequest) (*
 	return nil, grpc.Errorf(codes.Code(ping.ErrorCodeReturned), "Intentionally returning error for PingError")
 }
 
+func (s *testSrv) GetMessageHistory(ctx context.Context, req *testproto.HistoryRequest) (*testproto.HistoryResponse, error) {
+	s.messageHistoryMutex.Lock()
+	defer s.messageHistoryMutex.Unlock()
+	return &testproto.HistoryResponse{
+		MessageCount: s.messageHistory[req.GetHistoryIdentifier()],
+	}, nil
+}
+
 func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestService_PingListServer) error {
 	if (ping.GetSendHeaders()) {
 		stream.SendHeader(metadata.Pairs("HeaderTestKey1", "ServerValue1", "HeaderTestKey2", "ServerValue2"))
@@ -157,7 +173,16 @@ func (s *testSrv) PingList(ping *testproto.PingRequest, stream testproto.TestSer
 	for i := int32(0); i < ping.ResponseCount; i++ {
 		sleepDuration := ping.GetMessageLatencyMs()
 		time.Sleep(time.Duration(sleepDuration) * time.Millisecond)
+		err := stream.Context().Err()
+		if err != nil {
+			return grpc.Errorf(codes.Canceled, "client cancelled stream")
+		}
 		stream.Send(&testproto.PingResponse{Value: fmt.Sprintf("%s %d", ping.Value, i), Counter: i})
+		if ping.GetHistoryIdentifier() != "" {
+			s.messageHistoryMutex.Lock()
+			s.messageHistory[ping.GetHistoryIdentifier()] = i
+			s.messageHistoryMutex.Unlock()
+		}
 		if sleepDuration != 0 {
 			// Flush the stream
 			lowLevelServerStream, ok := transport.StreamFromContext(stream.Context())

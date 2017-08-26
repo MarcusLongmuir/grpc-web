@@ -19,6 +19,9 @@ message PingRequest {
   bool send_headers = 6;
   bool send_trailers = 7;
   int32 message_latency_ms = 8;
+
+  // if set, used by the list method to record how many messages were sent
+  string history_identifier = 9;
 }
 
 message PingResponse {
@@ -34,6 +37,18 @@ service TestService {
   rpc PingError(PingRequest) returns (google.protobuf.Empty) {}
 
   rpc PingList(PingRequest) returns (stream PingResponse) {}
+}
+
+message HistoryRequest {
+  string history_identifier = 1;
+}
+
+message HistoryResponse {
+  int32 message_count = 1;
+}
+
+service TestUtilService {
+  rpc GetMessageHistory(HistoryRequest) returns (HistoryResponse) {}
 }
 
 service FailService {

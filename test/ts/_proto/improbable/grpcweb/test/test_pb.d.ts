@@ -29,6 +29,9 @@ export class PingRequest extends jspb.Message {
   getMessageLatencyMs(): number;
   setMessageLatencyMs(value: number): void;
 
+  getHistoryIdentifier(): string;
+  setHistoryIdentifier(value: string): void;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): PingRequest.AsObject;
   static toObject(includeInstance: boolean, msg: PingRequest): PingRequest.AsObject;
@@ -49,6 +52,7 @@ export namespace PingRequest {
     sendHeaders: boolean,
     sendTrailers: boolean,
     messageLatencyMs: number,
+    historyIdentifier: string,
   }
 
   export enum FailureType {
@@ -79,6 +83,46 @@ export namespace PingResponse {
   export type AsObject = {
     value: string,
     counter: number,
+  }
+}
+
+export class HistoryRequest extends jspb.Message {
+  getHistoryIdentifier(): string;
+  setHistoryIdentifier(value: string): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): HistoryRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: HistoryRequest): HistoryRequest.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: HistoryRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): HistoryRequest;
+  static deserializeBinaryFromReader(message: HistoryRequest, reader: jspb.BinaryReader): HistoryRequest;
+}
+
+export namespace HistoryRequest {
+  export type AsObject = {
+    historyIdentifier: string,
+  }
+}
+
+export class HistoryResponse extends jspb.Message {
+  getMessageCount(): number;
+  setMessageCount(value: number): void;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): HistoryResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: HistoryResponse): HistoryResponse.AsObject;
+  static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+  static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+  static serializeBinaryToWriter(message: HistoryResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): HistoryResponse;
+  static deserializeBinaryFromReader(message: HistoryResponse, reader: jspb.BinaryReader): HistoryResponse;
+}
+
+export namespace HistoryResponse {
+  export type AsObject = {
+    messageCount: number,
   }
 }
 

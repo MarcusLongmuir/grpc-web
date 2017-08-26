@@ -40,6 +40,19 @@ export namespace TestService {
     static readonly responseType = improbable_grpcweb_test_test_pb.PingResponse;
   }
 }
+export class TestUtilService {
+  static serviceName = "improbable.grpcweb.test.TestUtilService";
+}
+export namespace TestUtilService {
+  export class GetMessageHistory {
+    static readonly methodName = "GetMessageHistory";
+    static readonly service = TestUtilService;
+    static readonly requestStream = false;
+    static readonly responseStream = false;
+    static readonly requestType = improbable_grpcweb_test_test_pb.HistoryRequest;
+    static readonly responseType = improbable_grpcweb_test_test_pb.HistoryResponse;
+  }
+}
 export class FailService {
   static serviceName = "improbable.grpcweb.test.FailService";
 }
